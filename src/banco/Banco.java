@@ -82,6 +82,12 @@ public class Banco {
         
         if(existe == 0) {
             usuarios.add(user);
+            
+            if(!user.getEmail().equals("admin")) {
+                System.out.println("Usuário cadastrado com sucesso!");
+            }
+        } else {
+            System.out.println("Usuário já existente!");
         }
     }
     
@@ -93,12 +99,13 @@ public class Banco {
     
     public void printRecursos() {
         for (Recurso recurso : recursos) {
-            System.out.println("Id:" + recurso.getId() + ". Tipo: " + recurso.getTipo() + ". Responsável: " + recurso.getResponsavel().getNome() + ". Status: " + recurso.getStatus());
+            System.out.println("Id:" + recurso.getId() + ". Tipo: " + recurso.getTipo() + ". Status: " + recurso.getStatus());
         }
     }
     
-    public void cadastrarRecurso(String tipo, Usuario user) {
-        Recurso recurso = new Recurso(recursosQnt, tipo, user, "Disponível");
+    public void cadastrarRecurso(String tipo) {
+        Recurso recurso = new Recurso(recursosQnt, tipo, null, "Disponível");
+        recurso.setResponsavel(null);
         recursos.add(recurso);
         recursosQnt++;
     }
@@ -119,13 +126,17 @@ public class Banco {
     
     public void cadastraAlocacao(Recurso rec, Usuario user) {
 
-        
         Usuario nUser = new Usuario(user.getNome(), user.getEmail(), user.getSenha(), user.getCargo());
         Recurso nRec = new Recurso(rec.getId(), rec.getTipo(), rec.getResponsavel(), rec.getStatus(), rec.getDataInicio(), rec.getDataFim(), null);
-    
+        Atividade nAtiv = new Atividade();
         Alocacao nAl = new Alocacao();
+        
+        nAtiv.setTipo("nada");
+        
         nAl.setRec(nRec);
         nAl.setUser(nUser);
+        nAl.setAtiv(nAtiv);
+        
         alocacoes.add(nAl);
     }
 
@@ -164,11 +175,11 @@ public class Banco {
     }
 
     public void concluirAlocacao(int id, Atividade ativ) {
-        System.out.println("Aqui: " + ativ.getTipo());
         for (Recurso recurso : recursos) {
             if(recurso.getId() == id) {
                 recurso.setStatus("Disponível");
                 recurso.getResponsavel().setLivre(1);
+                recurso.setResponsavel(null);
                 break;
             }
         }
@@ -177,9 +188,71 @@ public class Banco {
             if(al.getRec().getId() == id) {
                 al.getRec().setStatus("Concluído");
                 al.getRec().getResponsavel().setLivre(1);
+                ativ.getParticipantes().add(al.getRec().getResponsavel());
                 al.setAtiv(ativ);
                 break;
             }
         }
+    }
+    
+    boolean participou(Atividade ativ, String email) {
+        boolean p = false;
+        
+        if(ativ.getTipo().equals("nada")) return p;
+        
+        for (Usuario usuario : ativ.getParticipantes()) {
+            System.out.println("AQUI: " + usuario.getEmail());
+            if(usuario.getEmail().equals(email)) {
+                p = true;
+                break;
+            }
+        }
+        return p;
+    }
+
+    public void consultaUsuario(String email) {
+        Usuario user = null;
+        for (Usuario usuario : usuarios) {
+            if(usuario.getEmail().equals(email)) {
+                user = usuario;
+                break;
+            }
+        }
+        
+        if(user != null) {
+            System.out.println("Nome: " + user.getNome());
+            System.out.println("Email: " + user.getEmail());
+            
+            Alocacao al = null;
+            int a1 = 0, a2 = 0;
+            for (Alocacao alocacao: alocacoes) {
+                if(alocacao.getUser().getEmail().equals(email)) {
+                    al = alocacao;
+                    System.out.println("Recurso alocado: (" + al.getRec().getId() + ") " + al.getRec().getTipo());
+                    a1++;
+                }
+                
+                if(participou(alocacao.getAtiv(), email)) {
+                    al = alocacao;
+                    System.out.println("Atividade realizada: " + al.getAtiv().getTitulo());
+                    a2++;
+                }
+            }
+            
+            if(a1 == 0) {
+                System.out.println("Nenhum recurso alocado!");
+            }
+            
+            if(a2 == 0) {
+                System.out.println("Nenhuma atividade realizada!");
+            }
+            
+        } else {
+            System.out.println("Usuário não encontrado!");
+        }
+    }
+
+    public void consultaRecurso(int id) {
+
     }
 }

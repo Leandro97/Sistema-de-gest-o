@@ -59,9 +59,14 @@ public class Main {
                     loggedUser = banco.autenticar(email, senha);
                     if(loggedUser == null) {
                         System.out.println("Email ou senha incorretos.");
-                    } else if(email.equals("admin") || email.equals("a")) {
+                    } else if(email.equals("admin")) {
                         menuAdmin();
+                    } else if(loggedUser.getCargo().equals("Aluno")){
+                        menuAluno();
+                    } else{
+                        menuComum();
                     }
+                    
                     break;
                 case 2: //cadastrar usuário
                     System.out.println("---");
@@ -90,7 +95,6 @@ public class Main {
                     
                     user = new Usuario(nome, email, senha, cargoS);
                     banco.cadastrarUsuario(user);
-                    System.out.println("Usuário cadastrado com sucesso!");
 
                     break;
                 case 3: break; //sair      
@@ -150,6 +154,76 @@ public class Main {
             if(opc == 9) break;
         }
     }
+    
+    private static void menuAluno() {
+        int opc;
+        
+        for(;;) {
+            user = null;
+            System.out.println("---");
+            System.out.println("1 - Consultar recurso");
+            System.out.println("2 - Consultar usuário");
+            System.out.println("3 - Relatório");
+            System.out.println("4 - Logout");
+            opc = read.nextInt();
+
+            switch(opc) {
+                case 1: //consultar recurso
+                    consultarRecurso();
+                    break;
+                case 2: //consultar usuário
+                    consultarUsuario();
+                    break;
+                case 3: //relatório
+                    relatorio();
+                    break;
+                case 4: //logout 
+                    loggedUser = null;
+                    break;    
+            }
+            
+            if(opc == 4) break;
+        }
+    }
+    
+    private static void menuComum() {
+        int opc;
+        
+        for(;;) {
+            user = null;
+            System.out.println("---");
+            System.out.println("1 - Alocar recurso");
+            System.out.println("2 - Confirmar alocação");
+            System.out.println("3 - Consultar recurso");
+            System.out.println("4 - Consultar usuário");
+            System.out.println("5 - Relatório");
+            System.out.println("6 - Logout");
+            opc = read.nextInt();
+
+            switch(opc) {
+                case 1: //alocar recurso 
+                    alocarRecurso();
+                    break;
+                case 2: //confirmar alocação
+                    confirmarAlocacao();
+                    break;
+                case 3: //consultar recurso
+                    consultarRecurso();
+                    break;
+                case 4: //consultar usuário
+                    consultarUsuario();
+                    break;
+                case 5: //relatório
+                    relatorio();
+                    break;
+                case 6: //logout 
+                    loggedUser = null;
+                    break;    
+            }
+            
+            if(opc == 6) break;
+        }
+    }
 
     public static void cadastrarRecurso() {
         int tipo;
@@ -175,26 +249,13 @@ public class Main {
             case 4: tipoS = "Projetor";
                     break;
         }
-                    
-                    
-        while(user == null) {
-            System.out.println("Informe o nome do responsável pelo recurso");
-            nome = read.nextLine();
-            nome = read.nextLine();
+            
                         
-            for (Usuario usuario : banco.getUsuarios()) {
-                if((usuario.getNome().equals(nome)) && (!usuario.getCargo().equals("Aluno"))) {
-                    user = usuario;
-                    break;
-                } 
-            }
-                        
-            if(user == null) {
-                System.out.println("Usuário não encontrado ou permissão negada!");
-            } else {
-                banco.cadastrarRecurso(tipoS, user);
-                System.out.println("Recurso cadastrado com sucesso!");
-            }
+        if(loggedUser.getCargo().equals("Aluno")) {
+            System.out.println("Permissão negada!");
+        } else {
+            banco.cadastrarRecurso(tipoS);
+            System.out.println("Recurso cadastrado com sucesso!");
         }
     }
 
@@ -308,8 +369,9 @@ public class Main {
                             break;
                         } else {
                             rec.setStatus("Em processo de alocação");
-                            System.out.println("Alocação bem sucedida!");
+                            rec.setResponsavel(loggedUser);
                             banco.cadastraAlocacao(rec, loggedUser);
+                            System.out.println("Alocação bem sucedida!");
                         }
                         //System.out.println(rec);
                 }
@@ -474,7 +536,9 @@ public class Main {
                 System.out.println("Digite o id dos participantes da atividade(um por um) ou -1 para sair");
                 do {
                     for (i = 0; i < banco.getUsuarios().size(); i++) {
-                        System.out.println("Id: " + i + ". Nome: " + banco.getUsuarios().get(i).getNome());
+                        if(!banco.getUsuarios().get(i).equals(rec.getResponsavel())) {
+                            System.out.println("Id: " + i + ". Nome: " + banco.getUsuarios().get(i).getNome());
+                        }
                     }
                     opc = read.nextInt();
                     
@@ -493,17 +557,79 @@ public class Main {
             }
                 break;
             }
-        }        
-
-    public static void consultarRecurso() {
-       
-    }
+    }        
 
     public static void consultarUsuario() {
+        String email;
+        System.out.println("Digite o email do usuário a ser consultado.");
+        email = read.nextLine();
+        email = read.nextLine();
         
+        banco.consultaUsuario(email);
+        
+        System.out.println("Digite algo para sair.");
+        read.nextLine();
+    }
+
+    public static void consultarRecurso() {
+        int id;
+        System.out.println("Digite o id do recurso a ser consultado.");
+        id = read.nextInt();
+        
+        banco.consultaRecurso(id);
+        System.out.println("Digite algo para sair.");
+        read.nextLine();
+
     }
 
     private static void relatorio() {
+        int i, n1 = 0, n2 = 0, n3 = 0, n4 = 0;
+        System.out.println("Número de usuários cadastrados: " + banco.getUsuarios().size());
         
+        for (Alocacao al : banco.getAlocacoes()) {
+            if(al.getRec().getStatus().equals("Em processo de alocação")) {
+                n1++;
+            } else if(al.getRec().getStatus().equals("Alocado")) {
+                n2++;
+            } else if(al.getRec().getStatus().equals("Em andamento")) {
+                n3++;
+            } else if(al.getRec().getStatus().equals("Concluído")) {
+                n4++;
+            }
+        }
+        
+        System.out.println("Recursos \"em processo de alocação\": " + n1);
+        System.out.println("Recursos \"alocados\": " + n2);
+        System.out.println("Recursos \"em andamento\": " + n3);
+        System.out.println("Recursos \"concluídos\": " + n4);
+        
+        n1 = 0;
+        n2 = 0;
+        n3 = 0;
+        
+        System.out.println("Número total de alocações: " + banco.getAlocacoes().size());
+        
+        if(n4 != 0) {
+            for (i = 0; i < n4; i++) {
+                if(banco.getAlocacoes().get(i).getAtiv().getTipo().equals("Aula tradicional")) {
+                    n1++;
+                } else if(banco.getAlocacoes().get(i).getAtiv().getTipo().equals("Apresentações")) {
+                    n2++;
+                } else if(banco.getAlocacoes().get(i).getAtiv().getTipo().equals("Laboratório")) {
+                    n3++;
+                }
+            }
+
+            System.out.println("Atividades realizadas: ");
+            System.out.println("Aulas tradicionais: " + n1);
+            System.out.println("Apresentações: " + n2);
+            System.out.println("Laboratórios: " + n3);
+        } else {
+            System.out.println("Nenhuma ativdade cadastrada!");
+        }
+        
+        System.out.println("Digite qualquer coisa para sair.");
+        read.nextLine();
+        read.nextLine();
     }
 }

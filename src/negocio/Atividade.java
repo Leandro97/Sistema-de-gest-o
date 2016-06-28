@@ -13,6 +13,9 @@ public class Atividade {
     private List <Usuario> participantes;
     private String material;
 
+    public Atividade() {
+    
+    }
     public Atividade(String tipo, String titulo, String descricao, List<Usuario> participantes, String material) {
         this.tipo = tipo;
         this.titulo = titulo;
