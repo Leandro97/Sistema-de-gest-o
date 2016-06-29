@@ -1,7 +1,9 @@
 package negocio;
 
 import com.sun.beans.util.Cache;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * @author Leandro Martins
@@ -12,12 +14,14 @@ public class Recurso {
     private Calendar dataInicio, dataFim;
     private Usuario responsavel;
     private String status;
+    private List<Atividade> atividades;
     
     public Recurso(int id, String tipo, Usuario responsavel, String status) {
         this.id = id;
         this.tipo = tipo;
         this.responsavel = responsavel;
         this.status = status;
+        atividades = new ArrayList<Atividade>();
     }
     
     public Recurso(int id, String tipo, Usuario responsavel, String status, Calendar dataInicio, Calendar dataFim, Atividade atividade) {
@@ -78,8 +82,17 @@ public class Recurso {
     }  
     
     public String toString() {
-        return "Id: " + Integer.toString(id) + ". Tipo: " +  tipo + ". Responsável: " + responsavel.getNome() + ". Status: " + status + 
-                "\nData e hora de início: " + getDataInicio().get(Calendar.DATE) + "/" + (getDataInicio().get(Calendar.MONTH) + 1)+ "/" + getDataInicio().get(Calendar.YEAR) + ". " + getDataInicio().get(Calendar.HOUR_OF_DAY)  + ":" + getDataInicio().get(Calendar.MINUTE)  + 
+        return "Data e hora de início: " + getDataInicio().get(Calendar.DATE) + "/" + (getDataInicio().get(Calendar.MONTH) + 1)+ "/" + getDataInicio().get(Calendar.YEAR) + ". " + getDataInicio().get(Calendar.HOUR_OF_DAY)  + ":" + getDataInicio().get(Calendar.MINUTE)  + 
                 "\nData e hora de fim: " + getDataFim().get(Calendar.DATE) + "/" + (getDataFim().get(Calendar.MONTH) + 1)+ "/" + getDataFim().get(Calendar.YEAR) + ". " + getDataFim().get(Calendar.HOUR_OF_DAY)  + ":" + getDataFim().get(Calendar.MINUTE) ;
     }
+
+    public List<Atividade> getAtividades() {
+        return atividades;
+    }
+
+    public void setAtividades(List<Atividade> atividades) {
+        this.atividades = atividades;
+    }
+    
+    
 }

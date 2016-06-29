@@ -579,7 +579,7 @@ public class Main {
         banco.consultaRecurso(id);
         System.out.println("Digite algo para sair.");
         read.nextLine();
-
+        read.nextLine();
     }
 
     private static void relatorio() {

@@ -149,7 +149,7 @@ public class Banco {
         }
         
         for (Alocacao al : alocacoes) {
-            if(al.getRec().getId() == id) {
+            if(al.getRec().getId() == id && al.getRec().getStatus().equals("Em processo de alocação")) {
                 al.getRec().setStatus("Alocado");
                 break;
             }
@@ -166,7 +166,7 @@ public class Banco {
         }
         
         for (Alocacao al : alocacoes) {
-            if(al.getRec().getId() == id) {
+            if(al.getRec().getId() == id && al.getRec().getStatus().equals("Alocado")) {
                 al.getRec().setStatus("Em andamento");
                 al.getRec().getResponsavel().setLivre(0);
                 break;
@@ -180,12 +180,13 @@ public class Banco {
                 recurso.setStatus("Disponível");
                 recurso.getResponsavel().setLivre(1);
                 recurso.setResponsavel(null);
+                recurso.getAtividades().add(ativ);
                 break;
             }
         }
         
         for (Alocacao al : alocacoes) {
-            if(al.getRec().getId() == id) {
+            if(al.getRec().getId() == id && al.getRec().getStatus().equals("Em andamento")) {
                 al.getRec().setStatus("Concluído");
                 al.getRec().getResponsavel().setLivre(1);
                 ativ.getParticipantes().add(al.getRec().getResponsavel());
@@ -201,7 +202,6 @@ public class Banco {
         if(ativ.getTipo().equals("nada")) return p;
         
         for (Usuario usuario : ativ.getParticipantes()) {
-            System.out.println("AQUI: " + usuario.getEmail());
             if(usuario.getEmail().equals(email)) {
                 p = true;
                 break;
@@ -253,6 +253,37 @@ public class Banco {
     }
 
     public void consultaRecurso(int id) {
+        Recurso rec = null;
+        int aux = 0;
+        
+        for (Recurso recurso : recursos) {
+            if(recurso.getId() == id) {
+                rec = recurso;
+                break;
+            }
+        }
+        
+        if(rec != null) {
+            System.out.println("Id: " + rec.getId() );
+            System.out.println("Tipo: " + rec.getTipo());
+            System.out.println("Status: " + rec.getStatus());
 
+            if(!rec.getStatus().equals("Disponível")) {
+                System.out.println("Responsável:" + rec.getResponsavel().getNome());
+                System.out.println(rec);
+            } 
+            
+            if(rec.getAtividades().size() != 0) {
+                for (Atividade ativ : rec.getAtividades()) {
+                    System.out.println("Atividade: " + ativ.getTitulo());
+                    for (Usuario usuario : ativ.getParticipantes()) {
+                        System.out.println("Participante: " + usuario.getNome());
+                    }
+                }
+            }
+                        
+        } else {
+            System.out.println("Recurso não encontrado!");
+        }
     }
 }
